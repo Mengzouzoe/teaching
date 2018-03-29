@@ -1,0 +1,24 @@
+{% extends "bootstrap/base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}REGISTER{% endblock %}
+
+{# note:Getting rid of register.css for a while,it will be upload sooner
+{% block style %}
+{{super()}}
+<link rel="stylesheet" href="{{url_for('.static', filename='register.css')}}">
+{% endblock %}
+#}
+
+{% block content %}
+<div class="container">
+    <form class="from-signin" method="POST" action="/register">
+        <h2 class="form-signin-heading">Register</h2>
+        {{ form.hidden_tag() }}
+        {{ wtf.form_field(form.student_id) }}
+        {{ wtf.form_field(form.studentname) }}
+        {{ wtf.form_field(form.class_id)}}
+    <button class="btn btn-lg btn-primary btn-block" type="submit">Register</button>
+    </form>
+</div>
+{% endblock %}
