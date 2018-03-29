@@ -2,7 +2,7 @@
 venv/
 
 #ignore all files in the .dscode/ directory
-.dscode/
+.vscode/
 
 #ignore all files in the __pycache__/directory
 __pycache__/
