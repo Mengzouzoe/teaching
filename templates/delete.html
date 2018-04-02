@@ -1,0 +1,20 @@
+{% extends "bootstrap/base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}DELETE{% endblock %}
+
+{% block content %}
+<div class='container'>
+    <form action='/delete' method="POST">
+        <h2>DELETE</h2>
+        <table>
+            {{ form.hidden_tag()}}
+            {{ wtf.form_field(form.student_id)}}
+            {{ wtf.form_field(form.studentname)}}
+            {{ wtf.form_field(form.class_id)}}
+            {{ wtf.form_field(form.classname)}}
+        </table>
+        <button class="btn btn-lg btn-primary btn-block" type="submit">DELETE</button>
+    </form>
+</div>
+{% endblock %}
