@@ -48,7 +48,7 @@ class SearchForm(FlaskForm):
     studentname = StringField('studentname')
     class_id = StringField('class_id')
     classname = StringField('classname')
-    search = SubmitField('Search')
+    #search = SubmitField('Search')
 
 @app.route('/')
 def index():
@@ -63,14 +63,34 @@ def Register():
         db.session.add(new_student)
         db.session.commit()
 
-        return 'New user has been registered'
+        return 'New Student has been registered'
         #return '<h1>' + form.username.data + ' ' + form.password.data + '</h1>'
     
     return render_template('register.html', form=form)
 
 @app.route('/delete', methods=['GET', 'POST'])
 def Delete():
-    
+    form = SearchForm()
+
+    if form.validate_on_submit():
+
+        students = db.session.query(Student, Class).filter(Student.class_id == Class.id)
+        if form.student_id.data:
+            students = students.filter(Student.student_id == form.student_id.data)
+        if form.studentname.data:
+            students = students.filter(Student.studentname == form.studentname.data)
+        if form.class_id.data:
+            students = students.filter(Student.class_id == form.class_id.data)
+        students = students.all()
+
+        #For delete a list of Objects in sqlalchemy
+        for o in students:
+            db.session.delete(o[0])
+        db.session.commit()
+
+        return "<h2> Student has been deleted </h2>" 
+
+    return render_template('delete.html', form=form)
 
 @app.route('/dashboard', methods=['GET', 'POST'])
 def Dashboard():
@@ -80,16 +100,26 @@ def Dashboard():
     #return '<h1>Hello World!</h1>' 
     if form.validate_on_submit():
 
-        # For Allow not provided form value.
+        # For Allow not fill every signle form value blank.
         '''if form.student_id.data:
             students_id = db.session.filter(Student.class_id)
         elif form.studentname:
             students_name = '''
         #Don't konw to Specified the attribute in ORM
+        ''' 
         students= db.session.query(Student, Class).filter(Student.class_id == Class.id)\
         .filter(Student.student_id == form.student_id.data)\
         .filter(Student.studentname == form.studentname.data)\
-        .filter(Student.class_id == form.class_id.data).all()
+        .filter(Student.class_id == form.class_id.data).all()'''
+
+        students = db.session.query(Student, Class).filter(Student.class_id == Class.id)
+        if form.student_id.data:
+            students = students.filter(Student.student_id == form.student_id.data)
+        if form.studentname.data:
+            students = students.filter(Student.studentname == form.studentname.data)
+        if form.class_id.data:
+            students = students.filter(Student.class_id == form.class_id.data)
+        students = students.all()
         
         return render_template('display.html', students=students)
         #return '<h1>' + form.student_id.data + ' ' + form.studentname.data + ' ' + form.class_id.data + ' ' + form.classname.data + '</h1>'
