@@ -1,11 +1,12 @@
 from flask import Flask, render_template
-from flask_script import Manager
+from flask_script import Manager, Shell
 from flask_bootstrap import Bootstrap
 from flask_moment import Moment
 from flask_wtf import FlaskForm
 from wtforms import StringField, IntegerField, SubmitField
 from wtforms.validators import InputRequired, Length
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate, MigrateCommand
 from datetime import datetime
 
 app = Flask(__name__)
@@ -18,6 +19,7 @@ manager = Manager(app)
 bootsrap = Bootstrap(app)
 moment = Moment(app)
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 
 class Student(db.Model):
     __tablename__ = 'students'
@@ -49,6 +51,11 @@ class SearchForm(FlaskForm):
     class_id = StringField('class_id')
     classname = StringField('classname')
     #search = SubmitField('Search')
+
+def make_shell_context():
+    return dict(app=app, db=db, Student=Student, Class=Class)
+manager.add_command("shell", Shell(make_context=make_shell_context))
+manager.add_command('db', MigrateCommand)
 
 @app.route('/')
 def index():
