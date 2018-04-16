@@ -1,67 +1,16 @@
-from flask import Flask, render_template
-from flask_script import Manager, Shell
-from flask_bootstrap import Bootstrap
-from flask_moment import Moment
-from flask_wtf import FlaskForm
-from wtforms import StringField, IntegerField, SubmitField
-from wtforms.validators import InputRequired, Length
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate, MigrateCommand
 from datetime import datetime
+from flask import render_template, session, redirect, url_for
 
-app = Flask(__name__)
-app.config['SECRET_KEY'] = 'hard to guess string'
-app.config['SQLALCHEMY_DATABASE_URI'] = \
-    'mysql+pymysql://root:password@127.0.0.1/teaching'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
-manager = Manager(app)
-bootsrap = Bootstrap(app)
-moment = Moment(app)
-db = SQLAlchemy(app)
-migrate = Migrate(app, db)
+from . import main
+from .forms import RegisterForm, SearchForm
+from .. import db
+from ..models import Student, Class
 
-class Student(db.Model):
-    __tablename__ = 'students'
-    id = db.Column(db.Integer, primary_key=True)
-    student_id = db.Column(db.String(50), nullable=False)
-    studentname = db.Column(db.String(50), nullable=False)
-    class_id = db.Column(db.String(50), db.ForeignKey('classes.id'), nullable=False)
-
-    def __repr__(self):
-        return '<Student %r>' % self.studentname
-
-class Class(db.Model):
-    __tablename__ = 'classes'
-    id = db.Column(db.String(50), primary_key=True)
-    classname = db.Column(db.String(6), nullable=False)
-    students = db.relationship('Student', backref='Class', lazy="dynamic")
-
-    def __repr__(self):
-        return '<Class %r>' % self.classname
-
-class RegisterForm(FlaskForm):
-    student_id = StringField('student_id', validators=[InputRequired(), Length(min=11, max=20)])
-    studentname = StringField('studentname', validators=[InputRequired(), Length(min=4, max=20)])
-    class_id = StringField('class_id', validators=[InputRequired(), Length(min=4, max=12)])
-
-class SearchForm(FlaskForm):    
-    student_id = StringField('student_id')
-    studentname = StringField('studentname')
-    class_id = StringField('class_id')
-    classname = StringField('classname')
-    #search = SubmitField('Search')
-
-def make_shell_context():
-    return dict(app=app, db=db, Student=Student, Class=Class)
-manager.add_command("shell", Shell(make_context=make_shell_context))
-manager.add_command('db', MigrateCommand)
-
-@app.route('/')
+@main.route('/', methods=['GET', 'POST'])
 def index():
     return render_template('index.html', current_time=datetime.utcnow())
 
-@app.route('/register', methods=['GET', 'POST'])
+@main.route('/register', methods=['GET', 'POST'])
 def Register():
     form = RegisterForm()
 
@@ -75,7 +24,7 @@ def Register():
     
     return render_template('register.html', form=form)
 
-@app.route('/delete', methods=['GET', 'POST'])
+@main.route('/delete', methods=['GET', 'POST'])
 def Delete():
     form = SearchForm()
 
@@ -99,7 +48,7 @@ def Delete():
 
     return render_template('delete.html', form=form)
 
-@app.route('/dashboard', methods=['GET', 'POST'])
+@main.route('/dashboard', methods=['GET', 'POST'])
 def Dashboard():
     form = SearchForm()
 
@@ -132,14 +81,3 @@ def Dashboard():
         #return '<h1>' + form.student_id.data + ' ' + form.studentname.data + ' ' + form.class_id.data + ' ' + form.classname.data + '</h1>'
 
     return render_template('dashboard.html', form=form)
-
-@app.errorhandler(404)
-def page_not_found(e):
-    return render_template('404.html'), 404
-
-@app.errorhandler(500)
-def internal_server_error(e):
-    return render_template('500.html'), 500
-
-if __name__ == '__main__':
-    manager.run()
